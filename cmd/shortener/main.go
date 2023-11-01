@@ -9,11 +9,11 @@ import (
 	"github.com/gorilla/mux"
 )
 
-type fullUrl string
-type shortUrl string
+type fullURL string
+type shortURL string
 
-type shortToFullMap map[shortUrl]fullUrl
-type fullToShortMap map[fullUrl]shortUrl
+type shortToFullMap map[shortURL]fullURL
+type fullToShortMap map[fullURL]shortURL
 
 var byShortMap shortToFullMap
 var byFullMap fullToShortMap
@@ -24,7 +24,7 @@ func main() {
 	byFullMap = make(fullToShortMap, 0)
 	mux := mux.NewRouter()
 	mux.HandleFunc("/", postShorten)
-	mux.HandleFunc("/{id}", getUrl)
+	mux.HandleFunc("/{id}", getURL)
 	http.ListenAndServe(":8080", mux)
 }
 
@@ -46,16 +46,16 @@ func postShorten(w http.ResponseWriter, req *http.Request) {
 	w.Header().Add("Content-Type", "text/plain")
 	w.WriteHeader(http.StatusCreated)
 
-	if short, exists := byFullMap[fullUrl(full)]; exists {
+	if short, exists := byFullMap[fullURL(full)]; exists {
 		fmt.Fprint(w, req.Host+"/"+string(short))
 	} else {
 		short := randShortUnique(6)
-		addToMaps(shortUrl(short), fullUrl(full))
+		addToMaps(shortURL(short), fullURL(full))
 		fmt.Fprint(w, req.Host+"/"+string(short))
 	}
 }
 
-func getUrl(w http.ResponseWriter, req *http.Request) {
+func getURL(w http.ResponseWriter, req *http.Request) {
 	if req.Method != http.MethodGet {
 		w.WriteHeader(http.StatusBadRequest)
 		return
@@ -65,7 +65,7 @@ func getUrl(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	if url, ok := byShortMap[shortUrl(id)]; !ok {
+	if url, ok := byShortMap[shortURL(id)]; !ok {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	} else {
@@ -75,7 +75,7 @@ func getUrl(w http.ResponseWriter, req *http.Request) {
 	}
 }
 
-func randShortUnique(n int) shortUrl {
+func randShortUnique(n int) shortURL {
 
 	for {
 		r := make([]rune, 0, n)
@@ -83,14 +83,14 @@ func randShortUnique(n int) shortUrl {
 			randomSym := alphabet[rand.Intn(len(alphabet))]
 			r = append(r, randomSym)
 		}
-		if _, exists := byShortMap[shortUrl(r)]; !exists {
-			return shortUrl(r)
+		if _, exists := byShortMap[shortURL(r)]; !exists {
+			return shortURL(r)
 		}
 	}
 
 }
 
-func addToMaps(s shortUrl, f fullUrl) {
+func addToMaps(s shortURL, f fullURL) {
 	byShortMap[s] = f
 	byFullMap[f] = s
 }
