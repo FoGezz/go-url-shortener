@@ -88,7 +88,7 @@ func Test_getURLHandler_ServeHTTP(t *testing.T) {
 			if result.StatusCode != http.StatusBadRequest {
 				require.Equal(t, tt.want.location, result.Header.Get("Location"))
 
-				//GET with same data and ensure that result is the same
+				//GET with the same data and ensure that result is the same
 				h.ServeHTTP(tt.args.w, tt.args.req)
 				newResult := tt.args.w.Result()
 				defer newResult.Body.Close()
