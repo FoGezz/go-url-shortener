@@ -8,14 +8,14 @@ import (
 
 func TestLinksContainer(t *testing.T) {
 	container := NewLinksContainer()
-	fullUrl, shortUrl := "fullUrl", "sh"
+	fullURL, shortURL := "fullUrl", "sh"
 
 	//add
-	container.AddLink(fullUrl, shortUrl)
+	container.AddLink(fullURL, shortURL)
 
 	//success found
-	actual, found := container.GetByShort(shortUrl)
-	assert.Equal(t, fullUrl, actual)
+	actual, found := container.GetByShort(shortURL)
+	assert.Equal(t, fullURL, actual)
 	assert.Equal(t, true, found)
 
 	//fail not found
@@ -24,8 +24,8 @@ func TestLinksContainer(t *testing.T) {
 	assert.Equal(t, false, found)
 
 	//success found
-	actual, found = container.GetByFull(fullUrl)
-	assert.Equal(t, shortUrl, actual)
+	actual, found = container.GetByFull(fullURL)
+	assert.Equal(t, shortURL, actual)
 	assert.Equal(t, true, found)
 
 	//fail not found

@@ -79,6 +79,7 @@ func Test_getURLHandler_ServeHTTP(t *testing.T) {
 			h := NewGetURLHandler(storage)
 			h.ServeHTTP(tt.args.w, tt.args.req)
 			result := tt.args.w.Result()
+			defer result.Body.Close()
 			require.Equal(t, tt.want.status, result.StatusCode)
 			if result.StatusCode != http.StatusBadRequest {
 				require.Equal(t, tt.want.location, result.Header.Get("Location"))
@@ -86,6 +87,7 @@ func Test_getURLHandler_ServeHTTP(t *testing.T) {
 				//GET with same data and ensure that result is the same
 				h.ServeHTTP(tt.args.w, tt.args.req)
 				newResult := tt.args.w.Result()
+				defer newResult.Body.Close()
 				assert.Equal(t, result.StatusCode, newResult.StatusCode)
 				assert.Equal(t, result.Header.Get("Location"), newResult.Header.Get("Location"))
 			}
@@ -135,6 +137,7 @@ func Test_postShortenHandler_ServeHTTP(t *testing.T) {
 			h := NewPostShortenHandler(storage)
 			h.ServeHTTP(tt.args.w, tt.args.req)
 			result := tt.args.w.Result()
+			defer result.Body.Close()
 			require.Equal(t, tt.want.status, result.StatusCode)
 			tt.args.w.Flush()
 			if result.StatusCode != http.StatusBadRequest {
