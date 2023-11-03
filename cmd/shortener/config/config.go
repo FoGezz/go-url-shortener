@@ -19,12 +19,11 @@ type Config struct {
 }
 
 func (cfg *Config) ParseFlags() {
+	cfg.ServerAddress = defaultServerAddress
+	cfg.ResponseAddress = defaultResponseAddress
 	flag.Func("a", "Example: -a localhost:8080", func(v string) error {
 		if err := validateAddress(v); err != nil {
 			return err
-		}
-		if v == "" {
-			v = defaultServerAddress
 		}
 		cfg.ServerAddress = v
 		return nil
@@ -32,9 +31,6 @@ func (cfg *Config) ParseFlags() {
 	flag.Func("b", "Example -b http://redirectdomain.com", func(v string) error {
 		if err := validateAddress(v); err != nil {
 			return err
-		}
-		if v == "" {
-			v = defaultResponseAddress
 		}
 		cfg.ResponseAddress = v
 		return nil
