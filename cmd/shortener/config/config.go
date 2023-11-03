@@ -1,13 +1,12 @@
 package config
 
 import (
+	"errors"
 	"flag"
 	"strings"
-
-	"github.com/caarlos0/env/v10"
 )
 
-// var errInvalidFormat error = errors.New("address must be in format 'host:port'. i.e. localhost:8080")
+var errInvalidFormat error = errors.New("address must be in format 'host:port'. i.e. localhost:8080")
 
 const (
 	defaultServerAddress   = ":8080"
@@ -15,12 +14,8 @@ const (
 )
 
 type Config struct {
-	ServerAddress   string `env:"SERVER_ADDRESS" envDefault:":8080"`
-	ResponseAddress string `env:"BASE_URL" envDefault:"http://localhost:8080"`
-}
-
-func (cfg *Config) ParseEnv() {
-	env.Parse(cfg)
+	ServerAddress   string
+	ResponseAddress string
 }
 
 func (cfg *Config) ParseFlags() {
