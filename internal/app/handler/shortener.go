@@ -7,6 +7,7 @@ import (
 	"math/rand"
 	"net/http"
 
+	"github.com/FoGezz/go-url-shortener/cmd/shortener/config"
 	"github.com/FoGezz/go-url-shortener/internal/app/storage"
 	"github.com/go-chi/chi/v5"
 )
@@ -16,15 +17,17 @@ var alphabet []rune = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWX
 type ShortenerHandler struct {
 	http.Handler
 	linksContainer *storage.LinksContainer
+	cfg            config.Config
 }
 
 type postShortenHandler struct {
 	ShortenerHandler
 }
 
-func NewPostShortenHandler(container *storage.LinksContainer) *postShortenHandler {
+func NewPostShortenHandler(container *storage.LinksContainer, cfg config.Config) *postShortenHandler {
 	s := &postShortenHandler{} //у меня не получилось здесь сразу передать linksContainer
 	s.linksContainer = container
+	s.cfg = cfg
 
 	return s
 }
@@ -59,11 +62,11 @@ func (h *postShortenHandler) ServeHTTP(w http.ResponseWriter, req *http.Request)
 	w.WriteHeader(http.StatusCreated)
 
 	if short, exists := h.linksContainer.GetByFull(string(full)); exists {
-		fmt.Fprint(w, "http://"+req.Host+"/"+string(short))
+		fmt.Fprint(w, h.cfg.ResponseAddress+"/"+string(short))
 	} else {
 		short := h.randShortUnique(6)
 		h.linksContainer.AddLink(string(full), short)
-		fmt.Fprint(w, "http://"+req.Host+"/"+string(short))
+		fmt.Fprint(w, h.cfg.ResponseAddress+"/"+string(short))
 	}
 }
 
@@ -71,9 +74,10 @@ type getURLHandler struct {
 	ShortenerHandler
 }
 
-func NewGetURLHandler(container *storage.LinksContainer) *getURLHandler {
+func NewGetURLHandler(container *storage.LinksContainer, cfg config.Config) *getURLHandler {
 	s := &getURLHandler{} //у меня не получилось здесь сразу передать linksContainer
 	s.linksContainer = container
+	s.cfg = cfg
 
 	return s
 }

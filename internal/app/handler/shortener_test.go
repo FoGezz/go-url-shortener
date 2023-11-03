@@ -8,6 +8,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/FoGezz/go-url-shortener/cmd/shortener/config"
 	"github.com/FoGezz/go-url-shortener/internal/app/storage"
 	"github.com/go-chi/chi/v5"
 	"github.com/stretchr/testify/assert"
@@ -26,6 +27,9 @@ func Test_getURLHandler_ServeHTTP(t *testing.T) {
 
 	storage := storage.NewLinksContainer()
 	storage.AddLink("https://ya.ru", "ya")
+	cfg := config.Config{}
+	cfg.ResponseAddress = "http://localhost:8080"
+	cfg.ServerAddress = "localhost:8080"
 
 	tests := []struct {
 		name string
@@ -76,7 +80,7 @@ func Test_getURLHandler_ServeHTTP(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			h := NewGetURLHandler(storage)
+			h := NewGetURLHandler(storage, cfg)
 			h.ServeHTTP(tt.args.w, tt.args.req)
 			result := tt.args.w.Result()
 			defer result.Body.Close()
@@ -105,6 +109,9 @@ func Test_postShortenHandler_ServeHTTP(t *testing.T) {
 	}
 
 	storage := storage.NewLinksContainer()
+	cfg := config.Config{}
+	cfg.ResponseAddress = "http://localhost:8080"
+	cfg.ServerAddress = "localhost:8080"
 
 	tests := []struct {
 		name string
@@ -134,7 +141,7 @@ func Test_postShortenHandler_ServeHTTP(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			h := NewPostShortenHandler(storage)
+			h := NewPostShortenHandler(storage, cfg)
 			h.ServeHTTP(tt.args.w, tt.args.req)
 			result := tt.args.w.Result()
 			defer result.Body.Close()
