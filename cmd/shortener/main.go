@@ -7,7 +7,7 @@ import (
 
 	"github.com/FoGezz/go-url-shortener/internal/app/handler"
 	"github.com/FoGezz/go-url-shortener/internal/app/storage"
-	"github.com/gorilla/mux"
+	"github.com/go-chi/chi/v5"
 )
 
 func main() {
@@ -19,10 +19,10 @@ func main() {
 	defer file.Close()
 	log.SetOutput(file)
 
-	container := storage.NewLinksContainer()
+	storage := storage.NewLinksContainer()
+	r := chi.NewRouter()
+	r.Handle("/", handler.NewPostShortenHandler(storage))
+	r.Handle("/{id}", handler.NewGetURLHandler(storage))
 
-	mux := mux.NewRouter()
-	mux.Handle("/", handler.NewPostShortenHandler(container))
-	mux.Handle("/{id}", handler.NewGetURLHandler(container))
-	http.ListenAndServe(":8080", mux)
+	http.ListenAndServe(":8080", r)
 }

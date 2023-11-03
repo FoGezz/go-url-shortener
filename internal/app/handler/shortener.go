@@ -8,7 +8,7 @@ import (
 	"net/http"
 
 	"github.com/FoGezz/go-url-shortener/internal/app/storage"
-	"github.com/gorilla/mux"
+	"github.com/go-chi/chi/v5"
 )
 
 var alphabet []rune = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
@@ -85,8 +85,8 @@ func (h *getURLHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	id, exist := mux.Vars(req)["id"]
-	if !exist {
+	id := chi.URLParam(req, "id")
+	if id == "" {
 		log.Println("getURL: no id provided")
 		w.WriteHeader(http.StatusBadRequest)
 		return

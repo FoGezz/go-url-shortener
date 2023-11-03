@@ -18,17 +18,17 @@ func NewLinksContainer() *LinksContainer {
 	}
 }
 
-func (container *LinksContainer) AddLink(f string, s string) {
-	container.byShortMap[shortURL(s)] = fullURL(f)
-	container.byFullMap[fullURL(f)] = shortURL(s)
+func (container *LinksContainer) AddLink(full string, short string) {
+	container.byShortMap[shortURL(short)] = fullURL(full)
+	container.byFullMap[fullURL(full)] = shortURL(short)
 }
 
-func (container *LinksContainer) GetByShort(s string) (string, bool) {
-	full, exist := container.byShortMap[shortURL(s)]
-	return string(full), exist
+func (container *LinksContainer) GetByShort(s string) (full string, found bool) {
+	f, exist := container.byShortMap[shortURL(s)]
+	return string(f), exist
 }
 
-func (container *LinksContainer) GetByFull(f string) (string, bool) {
-	short, exist := container.byFullMap[fullURL(f)]
-	return string(short), exist
+func (container *LinksContainer) GetByFull(f string) (short string, found bool) {
+	s, exist := container.byFullMap[fullURL(f)]
+	return string(s), exist
 }
