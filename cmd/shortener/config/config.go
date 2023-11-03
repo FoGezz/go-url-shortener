@@ -45,8 +45,7 @@ func (cfg *Config) ParseFlags() {
 
 func validateAddress(v string) error {
 	if parts := strings.Split(v, ":"); len(parts) != 2 {
-		return nil
-		// return errInvalidFormat === АВТОТЕСТЫ ОГРАНИЧИЛИ
+		return errInvalidFormat
 	}
 	return nil
 }
