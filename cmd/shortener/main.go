@@ -15,8 +15,7 @@ import (
 func main() {
 
 	cfg := config.Config{}
-	cfg.ParseFlags()
-	cfg.ParseEnv()
+	cfg.Load()
 	fmt.Println("Run on conf", cfg)
 
 	file, err := os.OpenFile("logs.txt", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
