@@ -29,7 +29,7 @@ func Test_getURLHandler_ServeHTTP(t *testing.T) {
 	storage.AddLink("https://ya.ru", "ya")
 	cfg := config.Config{}
 	cfg.ResponseAddress = "http://localhost:8080"
-	cfg.ServerAddress = "localhost:8080"
+	cfg.ServerAddress = ":8080"
 
 	tests := []struct {
 		name string
