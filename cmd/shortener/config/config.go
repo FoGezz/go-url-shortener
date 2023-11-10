@@ -2,12 +2,10 @@ package config
 
 import (
 	"flag"
-	"strings"
+	"fmt"
 
 	"github.com/caarlos0/env/v10"
 )
-
-// var errInvalidFormat error = errors.New("address must be in format 'host:port'. i.e. localhost:8080")
 
 const (
 	defaultServerAddress   = ":8080"
@@ -17,6 +15,7 @@ const (
 type Config struct {
 	ServerAddress   string `env:"SERVER_ADDRESS"`
 	ResponseAddress string `env:"BASE_URL"`
+	Alphabet        []rune
 }
 
 func (cfg *Config) Load() {
@@ -24,34 +23,25 @@ func (cfg *Config) Load() {
 	cfg.ResponseAddress = defaultResponseAddress
 	cfg.parseFlags()
 	cfg.parseEnv()
+	cfg.Alphabet = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
+
 }
 
 func (cfg *Config) parseEnv() {
-	env.Parse(cfg)
+	err := env.Parse(cfg)
+	if err != nil {
+		fmt.Println("Unable to load config:", err)
+	}
 }
 
 func (cfg *Config) parseFlags() {
 	flag.Func("a", "Example: -a localhost:8080", func(v string) error {
-		if err := validateAddress(v); err != nil {
-			return err
-		}
 		cfg.ServerAddress = v
 		return nil
 	})
 	flag.Func("b", "Example -b http://redirectdomain.com", func(v string) error {
-		if err := validateAddress(v); err != nil {
-			return err
-		}
 		cfg.ResponseAddress = v
 		return nil
 	})
 	flag.Parse()
-}
-
-func validateAddress(v string) error {
-	if parts := strings.Split(v, ":"); len(parts) != 2 {
-		return nil
-		// return errInvalidFormat === АВТОТЕСТЫ ОГРАНИЧИЛИ
-	}
-	return nil
 }

@@ -1,2 +1,2 @@
-shortener: 
-	cd ./cmd/shortener && go build
+build: 
+	go build -o ./cmd/shortener ./cmd/shortener/ 

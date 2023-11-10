@@ -6,8 +6,8 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestLinksContainer(t *testing.T) {
-	container := NewLinksContainer()
+func TestLinksMapping(t *testing.T) {
+	container := NewLinksMapping()
 	fullURL, shortURL := "fullUrl", "sh"
 
 	//add
