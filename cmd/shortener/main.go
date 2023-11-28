@@ -21,6 +21,7 @@ func main() {
 	storage := storage.NewLinksMapping()
 	r := chi.NewRouter()
 	r.Use(middleware.ZapLogging)
+	r.Use(middleware.GzipMiddleware)
 	postShortenHandler := handler.NewPostShortenHandler(storage, cfg)
 	r.Handle("/", postShortenHandler)
 	r.Method(http.MethodPost, "/api/shorten", postShortenHandler)
