@@ -23,7 +23,7 @@ func main() {
 	r.Use(middleware.ZapLogging)
 	postShortenHandler := handler.NewPostShortenHandler(storage, cfg)
 	r.Handle("/", postShortenHandler)
-	r.Method(http.MethodPost, "/api/shorten/", postShortenHandler)
+	r.Method(http.MethodPost, "/api/shorten", postShortenHandler)
 	r.Handle("/{id}", handler.NewGetURLHandler(storage, cfg))
 
 	err := http.ListenAndServe(cfg.ServerAddress, r)
