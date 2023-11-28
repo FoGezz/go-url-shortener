@@ -6,7 +6,7 @@ import (
 	"os"
 )
 
-func (lm *LinksMapping) SaveJsonToFile(path string) {
+func (container *LinksMapping) SaveJsonToFile(path string) {
 	if path == "" {
 		return
 	}
@@ -17,7 +17,7 @@ func (lm *LinksMapping) SaveJsonToFile(path string) {
 	defer func() {
 		_ = file.Close()
 	}()
-	jsoned, err := json.MarshalIndent(lm.byShortMap, "", "	")
+	jsoned, err := json.MarshalIndent(container.byShortMap, "", "	")
 	if err != nil {
 		panic(err)
 	}
@@ -27,7 +27,7 @@ func (lm *LinksMapping) SaveJsonToFile(path string) {
 	}
 }
 
-func (lm *LinksMapping) LoadFromJsonFile(path string) {
+func (container *LinksMapping) LoadFromJsonFile(path string) {
 	if path == "" {
 		return
 	}
@@ -38,11 +38,11 @@ func (lm *LinksMapping) LoadFromJsonFile(path string) {
 	if err != nil {
 		panic(err)
 	}
-	err = json.Unmarshal(content, &lm.byShortMap)
+	err = json.Unmarshal(content, &container.byShortMap)
 	if err != nil {
 		panic(err)
 	}
-	for k, v := range lm.byShortMap {
-		lm.byFullMap[v] = k
+	for k, v := range container.byShortMap {
+		container.byFullMap[v] = k
 	}
 }
