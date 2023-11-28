@@ -82,6 +82,7 @@ func (h *postShortenHandler) ServeHTTP(w http.ResponseWriter, req *http.Request)
 		}
 	}
 
+	h.storage.SaveJsonToFile(h.cfg.FileStoragePath)
 }
 
 func parseFullFromRequest(req *http.Request) (string, error) {

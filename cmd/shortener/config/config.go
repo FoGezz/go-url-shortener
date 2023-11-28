@@ -3,6 +3,7 @@ package config
 import (
 	"flag"
 	"fmt"
+	"os"
 
 	"github.com/caarlos0/env/v10"
 )
@@ -15,12 +16,14 @@ const (
 type Config struct {
 	ServerAddress   string `env:"SERVER_ADDRESS"`
 	ResponseAddress string `env:"BASE_URL"`
+	FileStoragePath string `env:"FILE_STORAGE_PATH"`
 	Alphabet        []rune
 }
 
 func (cfg *Config) Load() {
 	cfg.ServerAddress = defaultServerAddress
 	cfg.ResponseAddress = defaultResponseAddress
+	cfg.FileStoragePath = os.TempDir() + "short-url-db.json"
 	cfg.parseFlags()
 	cfg.parseEnv()
 	cfg.Alphabet = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
@@ -41,6 +44,10 @@ func (cfg *Config) parseFlags() {
 	})
 	flag.Func("b", "Example -b http://redirectdomain.com", func(v string) error {
 		cfg.ResponseAddress = v
+		return nil
+	})
+	flag.Func("f", "Example -f /tmp/testfile.json", func(v string) error {
+		cfg.FileStoragePath = v
 		return nil
 	})
 	flag.Parse()
