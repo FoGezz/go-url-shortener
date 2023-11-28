@@ -19,7 +19,7 @@ func main() {
 	fmt.Println("Running on conf", cfg)
 
 	storage := storage.NewLinksMapping()
-	storage.LoadFromJsonFile(cfg.FileStoragePath)
+	storage.LoadFromJSONFile(cfg.FileStoragePath)
 
 	r := chi.NewRouter()
 	r.Use(middleware.ZapLogging)

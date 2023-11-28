@@ -6,7 +6,7 @@ import (
 	"os"
 )
 
-func (container *LinksMapping) SaveJsonToFile(path string) {
+func (container *LinksMapping) SaveJSONToFile(path string) {
 	if path == "" {
 		return
 	}
@@ -27,7 +27,7 @@ func (container *LinksMapping) SaveJsonToFile(path string) {
 	}
 }
 
-func (container *LinksMapping) LoadFromJsonFile(path string) {
+func (container *LinksMapping) LoadFromJSONFile(path string) {
 	if path == "" {
 		return
 	}
