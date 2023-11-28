@@ -7,6 +7,9 @@ import (
 )
 
 func (lm *LinksMapping) SaveJsonToFile(path string) {
+	if path == "" {
+		return
+	}
 	file, err := os.Create(path)
 	if err != nil {
 		panic(err)
@@ -18,7 +21,10 @@ func (lm *LinksMapping) SaveJsonToFile(path string) {
 	if err != nil {
 		panic(err)
 	}
-	file.Write(jsoned)
+	_, err = file.Write(jsoned)
+	if err != nil {
+		panic(err)
+	}
 }
 
 func (lm *LinksMapping) LoadFromJsonFile(path string) {
