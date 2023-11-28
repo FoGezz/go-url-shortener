@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"log"
@@ -10,6 +11,14 @@ import (
 	"github.com/FoGezz/go-url-shortener/cmd/shortener/config"
 	"github.com/FoGezz/go-url-shortener/internal/app/storage"
 )
+
+type postShortenRequest struct {
+	FullURL string `json:"url"`
+}
+
+type postShortenResponse struct {
+	ShortURL string `json:"result"`
+}
 
 type postShortenHandler struct {
 	ShortenerHandler
@@ -40,25 +49,63 @@ func (h *postShortenHandler) randShortUnique(n int) string {
 }
 
 func (h *postShortenHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
+	defer func() {
+		_ = req.Body.Close()
+	}()
 	if req.Method != http.MethodPost {
 		log.Println("postShorten: method not POST but ", req.Method)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	full, err := io.ReadAll(req.Body)
+
+	full, err := parseFullFromRequest(req)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
 	w.Header().Add("Content-Type", "text/plain")
-	w.WriteHeader(http.StatusCreated)
 
-	if short, exists := h.storage.GetByFull(string(full)); exists {
-		fmt.Fprint(w, h.cfg.ResponseAddress+"/"+string(short))
+	if short, exists := h.storage.GetByFull(full); exists {
+		err := printResponse(w, req, h.cfg.ResponseAddress+"/"+short)
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
 	} else {
 		short := h.randShortUnique(6)
-		h.storage.AddLink(string(full), short)
-		fmt.Fprint(w, h.cfg.ResponseAddress+"/"+string(short))
+		h.storage.AddLink(full, short)
+		err := printResponse(w, req, h.cfg.ResponseAddress+"/"+short)
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
 	}
+
+}
+
+func parseFullFromRequest(req *http.Request) (string, error) {
+	if req.Header.Get("Content-Type") == "application/json" {
+		jsonReq := new(postShortenRequest)
+		decodeEdd := json.NewDecoder(req.Body).Decode(jsonReq)
+		if decodeEdd != nil {
+			return "", decodeEdd
+		}
+		return jsonReq.FullURL, nil
+	}
+	full, err := io.ReadAll(req.Body)
+	return string(full), err
+}
+
+func printResponse(w http.ResponseWriter, req *http.Request, shortAddress string) error {
+	if req.Header.Get("Content-Type") == "application/json" {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusCreated)
+		err := json.NewEncoder(w).Encode(postShortenResponse{ShortURL: shortAddress})
+		return err
+	}
+	w.WriteHeader(http.StatusCreated)
+	fmt.Fprint(w, shortAddress)
+
+	return nil
 }
