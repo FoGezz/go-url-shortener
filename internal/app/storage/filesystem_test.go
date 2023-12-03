@@ -53,7 +53,8 @@ func TestLinksMapping_JSONFile_SaveAndLoad(t *testing.T) {
 	require.FileExists(t, cfg.FileStoragePath)
 
 	st = storage.NewLinksMapping()
-	st.LoadFromJSONFile(cfg.FileStoragePath)
+	err = st.LoadFromJSONFile(cfg.FileStoragePath)
+	require.NoError(t, err)
 
 	client.SetRedirectPolicy(resty.NoRedirectPolicy())
 	response, err = client.NewRequest().Get(string(shortened))
