@@ -19,18 +19,29 @@ func main() {
 	fmt.Println("Running on conf", cfg)
 
 	storage := storage.NewLinksMapping()
-	storage.LoadFromJSONFile(cfg.FileStoragePath)
+	loadErr := storage.LoadFromJSONFile(cfg.FileStoragePath)
+	if loadErr != nil {
+		log.Fatalf("Error encountered on restoring storage from file: %v", loadErr)
+	}
 
 	r := chi.NewRouter()
-	r.Use(middleware.ZapLogging)
-	r.Use(middleware.GzipMiddleware)
-	postShortenHandler := handler.NewPostShortenHandler(storage, cfg)
-	r.Handle("/", postShortenHandler)
-	r.Method(http.MethodPost, "/api/shorten", postShortenHandler)
-	r.Handle("/{id}", handler.NewGetURLHandler(storage, cfg))
+	registerMiddleware(r)
+	registerRoutes(r, storage, cfg)
 
 	err := http.ListenAndServe(cfg.ServerAddress, r)
 	if err != nil {
 		log.Fatalf("error ListenAndServe: %v", err)
 	}
+}
+
+func registerRoutes(r *chi.Mux, storage storage.ShortenerStorage, cfg *config.Config) {
+	postShortenHandler := handler.NewPostShortenHandler(storage, cfg)
+	r.Handle("/", postShortenHandler)
+	r.Method(http.MethodPost, "/api/shorten", postShortenHandler)
+	r.Handle("/{id}", handler.NewGetURLHandler(storage, cfg))
+}
+
+func registerMiddleware(r *chi.Mux) {
+	r.Use(middleware.ZapLogging)
+	r.Use(middleware.GzipMiddleware)
 }

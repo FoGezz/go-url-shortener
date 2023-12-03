@@ -27,22 +27,24 @@ func (container *LinksMapping) SaveJSONToFile(path string) {
 	}
 }
 
-func (container *LinksMapping) LoadFromJSONFile(path string) {
+func (container *LinksMapping) LoadFromJSONFile(path string) error {
 	if path == "" {
-		return
+		return nil
 	}
 	if _, err := os.Stat(path); errors.Is(err, os.ErrNotExist) {
-		return
+		return nil
 	}
 	content, err := os.ReadFile(path)
 	if err != nil {
-		panic(err)
+		return err
 	}
 	err = json.Unmarshal(content, &container.byShortMap)
 	if err != nil {
-		panic(err)
+		return err
 	}
 	for k, v := range container.byShortMap {
 		container.byFullMap[v] = k
 	}
+
+	return nil
 }

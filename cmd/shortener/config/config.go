@@ -20,6 +20,15 @@ type Config struct {
 	Alphabet        []rune
 }
 
+func (cfg *Config) String() string {
+	return fmt.Sprintf(`
+	ServerAddress: %s,
+	ResponseAddress: %s,
+	FileStoragePath: %s,
+	Alphabet: "%s"
+	`, cfg.ServerAddress, cfg.ResponseAddress, cfg.FileStoragePath, string(cfg.Alphabet))
+}
+
 func (cfg *Config) Load() {
 	cfg.ServerAddress = defaultServerAddress
 	cfg.ResponseAddress = defaultResponseAddress
