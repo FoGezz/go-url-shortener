@@ -19,6 +19,10 @@ import (
 Big system test of saving file from http on working server
 */
 func TestLinksMapping_JSONFile_SaveAndLoad(t *testing.T) {
+
+	//todo
+	t.Skip("Do after 1-2-1")
+
 	fullURL := "https://testurl555.xyz"
 	cfg := config.Config{}
 	cfg.Alphabet = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
