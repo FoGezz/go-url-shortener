@@ -19,7 +19,7 @@ import (
 Big system test of saving file from http on working server
 */
 func TestLinksMapping_JSONFile_SaveAndLoad(t *testing.T) {
-	fullUrl := "https://testurl555.xyz"
+	fullURL := "https://testurl555.xyz"
 	cfg := config.Config{}
 	cfg.Alphabet = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
 	cfg.FileStoragePath = os.TempDir() + "short-url-db-test-" + uuid.NewString() + ".json"
@@ -41,7 +41,7 @@ func TestLinksMapping_JSONFile_SaveAndLoad(t *testing.T) {
 	cfg.ResponseAddress = getServer.URL
 
 	client := resty.New()
-	response, err := client.NewRequest().SetBody(fullUrl).Post(postServer.URL)
+	response, err := client.NewRequest().SetBody(fullURL).Post(postServer.URL)
 	require.NoError(t, err)
 	shortened := response.Body()
 	require.NotEmpty(t, shortened, shortened)
@@ -54,6 +54,6 @@ func TestLinksMapping_JSONFile_SaveAndLoad(t *testing.T) {
 	client.SetRedirectPolicy(resty.NoRedirectPolicy())
 	response, err = client.NewRequest().Get(string(shortened))
 	require.ErrorIs(t, err, resty.ErrAutoRedirectDisabled)
-	redirectUrl := response.Header().Get("Location")
-	require.Equal(t, fullUrl, redirectUrl)
+	redirectURL := response.Header().Get("Location")
+	require.Equal(t, fullURL, redirectURL)
 }
