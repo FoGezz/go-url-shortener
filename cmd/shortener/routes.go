@@ -14,4 +14,5 @@ func registerRoutes(r *chi.Mux, app *config.App) {
 	r.Method(http.MethodPost, "/api/shorten", postShortenHandler)
 	r.Handle("/{id}", handler.NewGetURLHandler(app))
 	r.Method(http.MethodGet, "/ping", handler.NewGetPingHandler(app))
+	r.Method(http.MethodPost, "/api/shorten/batch", handler.NewPostShortenBatchHandler(app))
 }
