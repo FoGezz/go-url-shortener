@@ -26,8 +26,8 @@ func main() {
 	}
 	app := config.NewApp(cfg, storage)
 
-	if cfg.DbDSN != "" {
-		conn, err := pgxpool.New(context.Background(), cfg.DbDSN)
+	if cfg.DBDSN != "" {
+		conn, err := pgxpool.New(context.Background(), cfg.DBDSN)
 		if err != nil {
 			log.Fatalf("Error connecting to PG: %v", err)
 		}
