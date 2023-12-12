@@ -26,7 +26,6 @@ func main() {
 	app := config.NewApp(cfg, db)
 	if cfg.DBDSN != "" {
 		pool, DBErr := storage.NewDB(cfg.DBDSN)
-		_ = pool.Ping(context.Background())
 		if DBErr != nil {
 			log.Fatalf("Error encountered on connecting to DB: %v", DBErr)
 		}

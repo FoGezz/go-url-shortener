@@ -1,0 +1,1 @@
+alter table links drop constraint long_ux;
