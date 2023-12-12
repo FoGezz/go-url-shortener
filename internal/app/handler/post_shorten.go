@@ -65,7 +65,7 @@ func (h *postShortenHandler) ServeHTTP(w http.ResponseWriter, req *http.Request)
 	w.Header().Add("Content-Type", "text/plain")
 
 	if short, exists := h.app.Storage.GetByFull(full); exists {
-		err := printResponse(w, req, h.app.Cfg.ResponseAddress+"/"+short)
+		err := printResponse(w, req, h.app.Cfg.ResponseAddress+"/"+short, exists)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			return
@@ -73,7 +73,7 @@ func (h *postShortenHandler) ServeHTTP(w http.ResponseWriter, req *http.Request)
 	} else {
 		short := h.randShortUnique(6)
 		h.app.Storage.AddLink(full, short)
-		err := printResponse(w, req, h.app.Cfg.ResponseAddress+"/"+short)
+		err := printResponse(w, req, h.app.Cfg.ResponseAddress+"/"+short, exists)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			return
@@ -96,14 +96,22 @@ func parseFullFromRequest(req *http.Request) (string, error) {
 	return string(full), err
 }
 
-func printResponse(w http.ResponseWriter, req *http.Request, shortAddress string) error {
+func printResponse(w http.ResponseWriter, req *http.Request, shortAddress string, conflicted bool) error {
 	if req.Header.Get("Content-Type") == "application/json" {
 		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusCreated)
+		if conflicted {
+			w.WriteHeader(http.StatusConflict)
+		} else {
+			w.WriteHeader(http.StatusCreated)
+		}
 		err := json.NewEncoder(w).Encode(postShortenResponse{ShortURL: shortAddress})
 		return err
 	}
-	w.WriteHeader(http.StatusCreated)
+	if conflicted {
+		w.WriteHeader(http.StatusConflict)
+	} else {
+		w.WriteHeader(http.StatusCreated)
+	}
 	fmt.Fprint(w, shortAddress)
 
 	return nil
