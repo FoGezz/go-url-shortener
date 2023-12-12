@@ -69,7 +69,7 @@ func (h *postShortenBatchHandler) ServeHTTP(w http.ResponseWriter, req *http.Req
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(resp)
+	_ = json.NewEncoder(w).Encode(resp)
 
 	h.app.Storage.SaveJSONToFile(h.app.Cfg.FileStoragePath)
 }
