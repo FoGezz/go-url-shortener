@@ -1,15 +1,16 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net/http"
 
 	"github.com/FoGezz/go-url-shortener/cmd/shortener/config"
-	"github.com/FoGezz/go-url-shortener/internal/app/handler"
 	"github.com/FoGezz/go-url-shortener/internal/app/middleware"
 	"github.com/FoGezz/go-url-shortener/internal/app/storage"
 	"github.com/go-chi/chi/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 func main() {
@@ -23,22 +24,26 @@ func main() {
 	if loadErr != nil {
 		log.Fatalf("Error encountered on restoring storage from file: %v", loadErr)
 	}
+	app := config.NewApp(cfg, storage)
+
+	if cfg.DbDSN != "" {
+		conn, err := pgxpool.New(context.Background(), cfg.DbDSN)
+		if err != nil {
+			log.Fatalf("Error connecting to PG: %v", err)
+		}
+		app.DBPool = conn
+
+		defer conn.Close()
+	}
 
 	r := chi.NewRouter()
 	registerMiddleware(r)
-	registerRoutes(r, storage, cfg)
+	registerRoutes(r, app)
 
 	err := http.ListenAndServe(cfg.ServerAddress, r)
 	if err != nil {
 		log.Fatalf("error ListenAndServe: %v", err)
 	}
-}
-
-func registerRoutes(r *chi.Mux, storage storage.ShortenerStorage, cfg *config.Config) {
-	postShortenHandler := handler.NewPostShortenHandler(storage, cfg)
-	r.Handle("/", postShortenHandler)
-	r.Method(http.MethodPost, "/api/shorten", postShortenHandler)
-	r.Handle("/{id}", handler.NewGetURLHandler(storage, cfg))
 }
 
 func registerMiddleware(r *chi.Mux) {
