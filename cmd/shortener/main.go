@@ -10,7 +10,6 @@ import (
 	"github.com/FoGezz/go-url-shortener/internal/app/middleware"
 	"github.com/FoGezz/go-url-shortener/internal/app/storage"
 	"github.com/go-chi/chi/v5"
-	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 func main() {
@@ -19,21 +18,24 @@ func main() {
 	cfg.Load()
 	fmt.Println("Running on conf", cfg)
 
-	storage := storage.NewLinksMapping()
-	loadErr := storage.LoadFromJSONFile(cfg.FileStoragePath)
+	db := storage.NewLinksMapping()
+	loadErr := db.LoadFromJSONFile(cfg.FileStoragePath)
 	if loadErr != nil {
 		log.Fatalf("Error encountered on restoring storage from file: %v", loadErr)
 	}
-	app := config.NewApp(cfg, storage)
-
+	app := config.NewApp(cfg, db)
 	if cfg.DBDSN != "" {
-		conn, err := pgxpool.New(context.Background(), cfg.DBDSN)
-		if err != nil {
-			log.Fatalf("Error connecting to PG: %v", err)
+		pool, DBErr := storage.NewDB(cfg.DBDSN)
+		_ = pool.Ping(context.Background())
+		if DBErr != nil {
+			log.Fatalf("Error encountered on connecting to DB: %v", DBErr)
 		}
-		app.DBPool = conn
-
-		defer conn.Close()
+		app.DBPool = pool
+		conn, DBErr := pool.Acquire(context.Background())
+		if DBErr != nil {
+			log.Fatalf("Error encountered on acquiring conn: %v", DBErr)
+		}
+		app.Storage = storage.NewDBStorage(conn)
 	}
 
 	r := chi.NewRouter()
