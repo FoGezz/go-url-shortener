@@ -22,7 +22,7 @@ func (st *DBStorage) GetByShort(s string) (full string, found bool) {
 	if err != nil {
 		return "", false
 	}
-	r.Scan(&full)
+	_ = r.Scan(&full)
 	if full != "" {
 		found = true
 	}
@@ -34,7 +34,7 @@ func (st *DBStorage) GetByFull(f string) (short string, found bool) {
 	if err != nil {
 		return "", false
 	}
-	r.Scan(&short)
+	_ = r.Scan(&short)
 	if short != "" {
 		found = true
 	}
