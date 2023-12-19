@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"context"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -22,7 +23,7 @@ func Test_getURLHandler_ServeHTTP(t *testing.T) {
 	}
 
 	storage := storage.NewLinksMapping()
-	storage.AddLink("https://ya.ru", "ya")
+	storage.AddLink(context.Background(), "https://ya.ru", "ya")
 	cfg := &config.Config{}
 	cfg.ResponseAddress = "http://localhost:8080"
 	cfg.ServerAddress = ":8080"
