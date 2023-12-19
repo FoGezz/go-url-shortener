@@ -1,0 +1,20 @@
+# Use postgres/example user/password credentials
+version: '3.1'
+name: 'yandex-go-shortener'
+services:
+  db:
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - 5432:5432
+    volumes:
+      - ./docker/db-data:/var/lib/postgresql/data
+
+  app:
+    build: 
+      context: .
+      dockerfile: docker/goapp.Dockerfile 
+    ports:
+    - 8080:8080
