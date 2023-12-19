@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -31,7 +32,7 @@ func NewPostShortenHandler(app *config.App) *postShortenHandler {
 	}
 }
 
-func (h *postShortenHandler) randShortUnique(n int) string {
+func (h *postShortenHandler) randShortUnique(ctx context.Context, n int) string {
 	alphabet := h.app.Cfg.Alphabet
 	for {
 		r := make([]rune, 0, n)
@@ -39,7 +40,7 @@ func (h *postShortenHandler) randShortUnique(n int) string {
 			randomSym := alphabet[rand.Intn(len(alphabet))]
 			r = append(r, randomSym)
 		}
-		if _, exists := h.app.Storage.GetByShort(string(r)); !exists {
+		if _, exists := h.app.Storage.GetByShort(ctx, string(r)); !exists {
 			return string(r)
 		}
 	}
@@ -64,15 +65,15 @@ func (h *postShortenHandler) ServeHTTP(w http.ResponseWriter, req *http.Request)
 
 	w.Header().Add("Content-Type", "text/plain")
 
-	if short, exists := h.app.Storage.GetByFull(full); exists {
+	if short, exists := h.app.Storage.GetByFull(req.Context(), full); exists {
 		err := printResponse(w, req, h.app.Cfg.ResponseAddress+"/"+short, exists)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
 	} else {
-		short := h.randShortUnique(6)
-		h.app.Storage.AddLink(full, short)
+		short := h.randShortUnique(req.Context(), 6)
+		h.app.Storage.AddLink(req.Context(), full, short)
 		err := printResponse(w, req, h.app.Cfg.ResponseAddress+"/"+short, exists)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)

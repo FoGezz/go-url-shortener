@@ -1,2 +1,2 @@
 #!/bin/bash
-docker compose -f docker/docker-compose.yml run --rm migrate $@
+docker compose -f docker-compose.yml run --rm migrate $@

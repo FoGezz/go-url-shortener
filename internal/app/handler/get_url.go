@@ -33,7 +33,7 @@ func (h *getURLHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	if url, ok := h.app.Storage.GetByShort(id); !ok {
+	if url, ok := h.app.Storage.GetByShort(req.Context(), id); !ok {
 		log.Println("getURL: not found by ", id)
 		w.WriteHeader(http.StatusBadRequest)
 		return

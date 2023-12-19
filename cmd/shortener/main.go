@@ -7,7 +7,7 @@ import (
 	"net/http"
 
 	"github.com/FoGezz/go-url-shortener/cmd/shortener/config"
-	"github.com/FoGezz/go-url-shortener/internal/app/middleware"
+	"github.com/FoGezz/go-url-shortener/internal/app/handler"
 	"github.com/FoGezz/go-url-shortener/internal/app/storage"
 	"github.com/go-chi/chi/v5"
 )
@@ -38,16 +38,11 @@ func main() {
 	}
 
 	r := chi.NewRouter()
-	registerMiddleware(r)
-	registerRoutes(r, app)
+	handler.RegisterMiddleware(r)
+	handler.RegisterRoutes(r, app)
 
 	err := http.ListenAndServe(cfg.ServerAddress, r)
 	if err != nil {
 		log.Fatalf("error ListenAndServe: %v", err)
 	}
-}
-
-func registerMiddleware(r *chi.Mux) {
-	r.Use(middleware.ZapLogging)
-	r.Use(middleware.GzipMiddleware)
 }

@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"context"
 	"encoding/json"
 	"math/rand"
 	"net/http"
@@ -29,7 +30,7 @@ func NewPostShortenBatchHandler(app *config.App) *postShortenBatchHandler {
 	}
 }
 
-func (h *postShortenBatchHandler) randShortUnique(n int) string {
+func (h *postShortenBatchHandler) randShortUnique(ctx context.Context, n int) string {
 	alphabet := h.app.Cfg.Alphabet
 	for {
 		r := make([]rune, 0, n)
@@ -37,7 +38,7 @@ func (h *postShortenBatchHandler) randShortUnique(n int) string {
 			randomSym := alphabet[rand.Intn(len(alphabet))]
 			r = append(r, randomSym)
 		}
-		if _, exists := h.app.Storage.GetByShort(string(r)); !exists {
+		if _, exists := h.app.Storage.GetByShort(ctx, string(r)); !exists {
 			return string(r)
 		}
 	}
@@ -59,10 +60,10 @@ func (h *postShortenBatchHandler) ServeHTTP(w http.ResponseWriter, req *http.Req
 
 	for _, v := range parsedReq {
 
-		s, found := h.app.Storage.GetByFull(v.OriginalURL)
+		s, found := h.app.Storage.GetByFull(req.Context(), v.OriginalURL)
 		if !found {
-			s = h.randShortUnique(6)
-			h.app.Storage.AddLink(v.OriginalURL, s)
+			s = h.randShortUnique(req.Context(), 6)
+			h.app.Storage.AddLink(req.Context(), v.OriginalURL, s)
 		}
 		resp = append(resp, postShortenBatchResponseUnit{ShortURL: h.app.Cfg.ResponseAddress + "/" + s, CorrelationID: v.CorrelationID})
 	}
