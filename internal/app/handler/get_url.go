@@ -5,7 +5,6 @@ import (
 	"net/http"
 
 	"github.com/FoGezz/go-url-shortener/cmd/shortener/config"
-	"github.com/FoGezz/go-url-shortener/internal/app/storage"
 	"github.com/go-chi/chi/v5"
 )
 
@@ -13,11 +12,10 @@ type getURLHandler struct {
 	ShortenerHandler
 }
 
-func NewGetURLHandler(storage storage.ShortenerStorage, cfg *config.Config) *getURLHandler {
+func NewGetURLHandler(app *config.App) *getURLHandler {
 	return &getURLHandler{
 		ShortenerHandler: ShortenerHandler{
-			storage: storage,
-			cfg:     cfg,
+			app,
 		},
 	}
 }
@@ -35,7 +33,7 @@ func (h *getURLHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	if url, ok := h.storage.GetByShort(id); !ok {
+	if url, ok := h.app.Storage.GetByShort(req.Context(), id); !ok {
 		log.Println("getURL: not found by ", id)
 		w.WriteHeader(http.StatusBadRequest)
 		return

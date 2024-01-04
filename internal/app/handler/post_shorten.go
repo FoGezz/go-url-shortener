@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -9,7 +10,6 @@ import (
 	"net/http"
 
 	"github.com/FoGezz/go-url-shortener/cmd/shortener/config"
-	"github.com/FoGezz/go-url-shortener/internal/app/storage"
 )
 
 type postShortenRequest struct {
@@ -24,24 +24,23 @@ type postShortenHandler struct {
 	ShortenerHandler
 }
 
-func NewPostShortenHandler(storage storage.ShortenerStorage, cfg *config.Config) *postShortenHandler {
+func NewPostShortenHandler(app *config.App) *postShortenHandler {
 	return &postShortenHandler{
 		ShortenerHandler: ShortenerHandler{
-			storage: storage,
-			cfg:     cfg,
+			app,
 		},
 	}
 }
 
-func (h *postShortenHandler) randShortUnique(n int) string {
-	alphabet := h.cfg.Alphabet
+func (h *postShortenHandler) randShortUnique(ctx context.Context, n int) string {
+	alphabet := h.app.Cfg.Alphabet
 	for {
 		r := make([]rune, 0, n)
 		for i := 0; i < n; i++ {
 			randomSym := alphabet[rand.Intn(len(alphabet))]
 			r = append(r, randomSym)
 		}
-		if _, exists := h.storage.GetByShort(string(r)); !exists {
+		if _, exists := h.app.Storage.GetByShort(ctx, string(r)); !exists {
 			return string(r)
 		}
 	}
@@ -66,23 +65,23 @@ func (h *postShortenHandler) ServeHTTP(w http.ResponseWriter, req *http.Request)
 
 	w.Header().Add("Content-Type", "text/plain")
 
-	if short, exists := h.storage.GetByFull(full); exists {
-		err := printResponse(w, req, h.cfg.ResponseAddress+"/"+short)
+	if short, exists := h.app.Storage.GetByFull(req.Context(), full); exists {
+		err := printResponse(w, req, h.app.Cfg.ResponseAddress+"/"+short, exists)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
 	} else {
-		short := h.randShortUnique(6)
-		h.storage.AddLink(full, short)
-		err := printResponse(w, req, h.cfg.ResponseAddress+"/"+short)
+		short := h.randShortUnique(req.Context(), 6)
+		h.app.Storage.AddLink(req.Context(), full, short)
+		err := printResponse(w, req, h.app.Cfg.ResponseAddress+"/"+short, exists)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
 	}
 
-	h.storage.SaveJSONToFile(h.cfg.FileStoragePath)
+	h.app.Storage.SaveJSONToFile(h.app.Cfg.FileStoragePath)
 }
 
 func parseFullFromRequest(req *http.Request) (string, error) {
@@ -98,14 +97,22 @@ func parseFullFromRequest(req *http.Request) (string, error) {
 	return string(full), err
 }
 
-func printResponse(w http.ResponseWriter, req *http.Request, shortAddress string) error {
+func printResponse(w http.ResponseWriter, req *http.Request, shortAddress string, conflicted bool) error {
 	if req.Header.Get("Content-Type") == "application/json" {
 		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusCreated)
+		if conflicted {
+			w.WriteHeader(http.StatusConflict)
+		} else {
+			w.WriteHeader(http.StatusCreated)
+		}
 		err := json.NewEncoder(w).Encode(postShortenResponse{ShortURL: shortAddress})
 		return err
 	}
-	w.WriteHeader(http.StatusCreated)
+	if conflicted {
+		w.WriteHeader(http.StatusConflict)
+	} else {
+		w.WriteHeader(http.StatusCreated)
+	}
 	fmt.Fprint(w, shortAddress)
 
 	return nil

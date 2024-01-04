@@ -29,6 +29,7 @@ func Test_postShortenHandler_ServeHTTP(t *testing.T) {
 	cfg.ResponseAddress = "http://localhost:8080"
 	cfg.ServerAddress = "localhost:8080"
 	cfg.Alphabet = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
+	app := config.NewApp(cfg, storage)
 
 	tests := []struct {
 		name string
@@ -58,7 +59,7 @@ func Test_postShortenHandler_ServeHTTP(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			h := NewPostShortenHandler(storage, cfg)
+			h := NewPostShortenHandler(app)
 			h.ServeHTTP(tt.args.w, tt.args.req)
 			result := tt.args.w.Result()
 			defer result.Body.Close()
@@ -87,6 +88,7 @@ func Test_postApiShortenHandler_ServeHTTP(t *testing.T) {
 	cfg.ResponseAddress = "http://localhost:8080"
 	cfg.ServerAddress = "localhost:8080"
 	cfg.Alphabet = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
+	app := config.NewApp(cfg, storage)
 
 	tests := []struct {
 		name string
@@ -126,7 +128,7 @@ func Test_postApiShortenHandler_ServeHTTP(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			h := NewPostShortenHandler(storage, cfg)
+			h := NewPostShortenHandler(app)
 			h.ServeHTTP(tt.args.w, tt.args.req)
 			result := tt.args.w.Result()
 			defer result.Body.Close()

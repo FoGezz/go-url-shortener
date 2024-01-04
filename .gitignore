@@ -24,3 +24,6 @@ vendor/
 
 #logs
 logs.txt
+
+#db
+docker/db-data

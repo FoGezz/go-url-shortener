@@ -28,9 +28,10 @@ func TestLinksMapping_JSONFile_SaveAndLoad(t *testing.T) {
 	cfg.Alphabet = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
 	cfg.FileStoragePath = os.TempDir() + "short-url-db-test-" + uuid.NewString() + ".json"
 	st := storage.NewLinksMapping()
+	app := config.NewApp(&cfg, st)
 
-	postHandler := handler.NewPostShortenHandler(st, &cfg)
-	getHandler := handler.NewGetURLHandler(st, &cfg)
+	postHandler := handler.NewPostShortenHandler(app)
+	getHandler := handler.NewGetURLHandler(app)
 	router := chi.NewRouter()
 	router.Handle("/{id}", getHandler)
 	router.Handle("/", postHandler)

@@ -17,6 +17,7 @@ type Config struct {
 	ServerAddress   string `env:"SERVER_ADDRESS"`
 	ResponseAddress string `env:"BASE_URL"`
 	FileStoragePath string `env:"FILE_STORAGE_PATH"`
+	DBDSN           string `env:"DATABASE_DSN"`
 	Alphabet        []rune
 }
 
@@ -25,8 +26,9 @@ func (cfg *Config) String() string {
 	ServerAddress: %s,
 	ResponseAddress: %s,
 	FileStoragePath: %s,
-	Alphabet: "%s"
-	`, cfg.ServerAddress, cfg.ResponseAddress, cfg.FileStoragePath, string(cfg.Alphabet))
+	Alphabet: "%s",
+	DATABASE_DSN: "%s"
+	`, cfg.ServerAddress, cfg.ResponseAddress, cfg.FileStoragePath, string(cfg.Alphabet), cfg.DBDSN)
 }
 
 func (cfg *Config) Load() {
@@ -57,6 +59,10 @@ func (cfg *Config) parseFlags() {
 	})
 	flag.Func("f", "Example -f /tmp/testfile.json", func(v string) error {
 		cfg.FileStoragePath = v
+		return nil
+	})
+	flag.Func("d", "Example -d postgres://username:password@localhost:5432/database_name", func(v string) error {
+		cfg.DBDSN = v
 		return nil
 	})
 	flag.Parse()
