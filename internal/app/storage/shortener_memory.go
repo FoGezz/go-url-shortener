@@ -1,6 +1,9 @@
 package storage
 
-import "context"
+import (
+	"context"
+	"errors"
+)
 
 type fullURL string
 type shortURL string
@@ -33,4 +36,8 @@ func (container *LinksMapping) GetByShort(ctx context.Context, s string) (full s
 func (container *LinksMapping) GetByFull(ctx context.Context, f string) (short string, found bool) {
 	s, exist := container.byFullMap[fullURL(f)]
 	return string(s), exist
+}
+
+func (container *LinksMapping) GetByUserUUID(ctx context.Context, userUUID string) (*shortToFullMap, error) {
+	return nil, errors.New("cannot get by userUUID from memory")
 }

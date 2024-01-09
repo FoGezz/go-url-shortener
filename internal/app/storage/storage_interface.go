@@ -8,4 +8,5 @@ type ShortenerStorage interface {
 	GetByFull(ctx context.Context, f string) (short string, found bool)
 	LoadFromJSONFile(path string) error
 	SaveJSONToFile(path string)
+	GetByUserUUID(ctx context.Context, userUUID string) (*shortToFullMap, error)
 }

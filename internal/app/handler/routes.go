@@ -15,9 +15,11 @@ func RegisterRoutes(r *chi.Mux, app *config.App) {
 	r.Handle("/{id}", NewGetURLHandler(app))
 	r.Method(http.MethodGet, "/ping", NewGetPingHandler(app))
 	r.Method(http.MethodPost, "/api/shorten/batch", NewPostShortenBatchHandler(app))
+	r.Method(http.MethodGet, "/api/user/urls", NewGetUserURLsHandler(app))
 }
 
 func RegisterMiddleware(r *chi.Mux) {
 	r.Use(middleware.ZapLogging)
 	r.Use(middleware.GzipMiddleware)
+	r.Use(middleware.JwtAuthorization)
 }
