@@ -16,6 +16,7 @@ func main() {
 
 	cfg := &config.Config{}
 	cfg.Load()
+	// cfg.DBDSN = "postgres://postgres:postgres@localhost:5432/praktikum?sslmode=disable"
 	fmt.Println("Running on conf", cfg)
 
 	db := storage.NewLinksMapping()
