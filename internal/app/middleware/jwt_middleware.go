@@ -11,13 +11,13 @@ import (
 
 type ShortenerClaims struct {
 	jwt.RegisteredClaims
-	UserId string
+	UserID string
 }
 
 type CookieKey string
 
-const SECRET_KEY = "supersecretkey"
-const USER_ID_KEY CookieKey = "UserId"
+const SecretKey string = "supersecretkey"
+const UserIDKey CookieKey = "UserId"
 
 func JwtAuthorization(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -26,9 +26,9 @@ func JwtAuthorization(next http.Handler) http.Handler {
 			newUUID := uuid.NewString()
 			newToken := jwt.NewWithClaims(jwt.SigningMethodHS256, ShortenerClaims{
 				RegisteredClaims: jwt.RegisteredClaims{},
-				UserId:           newUUID,
+				UserID:           newUUID,
 			})
-			strJwt, err := newToken.SignedString([]byte(SECRET_KEY))
+			strJwt, err := newToken.SignedString([]byte(SecretKey))
 			if err != nil {
 				w.WriteHeader(http.StatusUnauthorized)
 				return
@@ -42,7 +42,7 @@ func JwtAuthorization(next http.Handler) http.Handler {
 				next.ServeHTTP(w, r)
 				return
 			}
-			ctx := context.WithValue(r.Context(), USER_ID_KEY, newUUID)
+			ctx := context.WithValue(r.Context(), UserIDKey, newUUID)
 			next.ServeHTTP(w, r.WithContext(ctx))
 			return
 		}
@@ -50,13 +50,13 @@ func JwtAuthorization(next http.Handler) http.Handler {
 		claims := &ShortenerClaims{}
 
 		_, err = jwt.ParseWithClaims(token.Value, claims, func(t *jwt.Token) (interface{}, error) {
-			return []byte(SECRET_KEY), nil
+			return []byte(SecretKey), nil
 		})
 		if err != nil {
 			w.WriteHeader(http.StatusUnauthorized)
 			return
 		}
-		ctx := context.WithValue(r.Context(), USER_ID_KEY, claims.UserId)
+		ctx := context.WithValue(r.Context(), UserIDKey, claims.UserID)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }

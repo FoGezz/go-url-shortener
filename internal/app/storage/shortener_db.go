@@ -18,7 +18,7 @@ func NewDBStorage(c *pgxpool.Conn) *DBStorage {
 }
 
 func (st *DBStorage) AddLink(ctx context.Context, full string, short string) {
-	_, err := st.conn.Exec(ctx, "INSERT INTO links(long,short,user_uuid) VALUES ($1,$2,$3);", full, short, ctx.Value(middleware.USER_ID_KEY))
+	_, err := st.conn.Exec(ctx, "INSERT INTO links(long,short,user_uuid) VALUES ($1,$2,$3);", full, short, ctx.Value(middleware.UserIDKey))
 	if err != nil {
 		log.Println(err)
 	}

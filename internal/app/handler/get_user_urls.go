@@ -27,7 +27,7 @@ func NewGetUserURLsHandler(app *config.App) *getUserURLsHandler {
 }
 
 func (h *getUserURLsHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
-	userUUIDAny := req.Context().Value(middleware.USER_ID_KEY)
+	userUUIDAny := req.Context().Value(middleware.UserIDKey)
 	if userUUIDAny == nil || userUUIDAny == "" {
 		w.WriteHeader(http.StatusUnauthorized)
 		return
