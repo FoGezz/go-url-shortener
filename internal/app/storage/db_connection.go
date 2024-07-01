@@ -2,21 +2,18 @@ package storage
 
 import (
 	"context"
-	"embed"
 	"errors"
 	"fmt"
 
+	"github.com/FoGezz/go-url-shortener/internal/app/storage/migrations"
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 	"github.com/golang-migrate/migrate/v4/source/iofs"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-//go:embed migrations/*.sql
-var migrationsDir embed.FS
-
 func runMigrations(DSN string) error {
-	d, err := iofs.New(migrationsDir, "migrations")
+	d, err := iofs.New(migrations.MigrationsDir, ".")
 	if err != nil {
 		return err
 	}

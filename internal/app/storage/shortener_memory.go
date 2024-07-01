@@ -1,6 +1,9 @@
 package storage
 
-import "context"
+import (
+	"context"
+	"errors"
+)
 
 type fullURL string
 type shortURL string
@@ -25,12 +28,26 @@ func (container *LinksMapping) AddLink(ctx context.Context, full string, short s
 	container.byFullMap[fullURL(full)] = shortURL(short)
 }
 
-func (container *LinksMapping) GetByShort(ctx context.Context, s string) (full string, found bool) {
+func (container *LinksMapping) GetByShort(ctx context.Context, s string) (full string, found bool, deleted bool) {
 	f, exist := container.byShortMap[shortURL(s)]
-	return string(f), exist
+	return string(f), exist, false
 }
 
 func (container *LinksMapping) GetByFull(ctx context.Context, f string) (short string, found bool) {
 	s, exist := container.byFullMap[fullURL(f)]
 	return string(s), exist
+}
+
+func (container *LinksMapping) GetByUserUUID(ctx context.Context, userUUID string) (*shortToFullMap, error) {
+	return nil, errors.New("cannot get by userUUID from memory")
+}
+
+func (container *LinksMapping) DeleteAsync(ctx context.Context, shortURLs []string, userUUID string) {
+	for _, url := range shortURLs {
+		full, exists := container.byShortMap[shortURL(url)]
+		if exists {
+			delete(container.byShortMap, shortURL(url))
+			delete(container.byFullMap, full)
+		}
+	}
 }

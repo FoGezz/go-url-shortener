@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"fmt"
 	"log"
 	"net/http"
@@ -30,11 +29,7 @@ func main() {
 			log.Fatalf("Error encountered on connecting to DB: %v", DBErr)
 		}
 		app.DBPool = pool
-		conn, DBErr := pool.Acquire(context.Background())
-		if DBErr != nil {
-			log.Fatalf("Error encountered on acquiring conn: %v", DBErr)
-		}
-		app.Storage = storage.NewDBStorage(conn)
+		app.Storage = storage.NewDBStorage(pool)
 	}
 
 	r := chi.NewRouter()

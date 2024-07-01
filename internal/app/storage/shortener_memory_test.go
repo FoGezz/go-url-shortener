@@ -15,12 +15,12 @@ func TestLinksMapping(t *testing.T) {
 	container.AddLink(context.Background(), fullURL, shortURL)
 
 	//success found
-	actual, found := container.GetByShort(context.Background(), shortURL)
+	actual, found, _ := container.GetByShort(context.Background(), shortURL)
 	assert.Equal(t, fullURL, actual)
 	assert.Equal(t, true, found)
 
 	//fail not found
-	actual, found = container.GetByShort(context.Background(), "unexistentstr")
+	actual, found, _ = container.GetByShort(context.Background(), "unexistentstr")
 	assert.Equal(t, "", actual)
 	assert.Equal(t, false, found)
 

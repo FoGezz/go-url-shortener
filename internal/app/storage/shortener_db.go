@@ -2,25 +2,34 @@ package storage
 
 import (
 	"context"
+	"errors"
+	"log"
 
+	"github.com/FoGezz/go-url-shortener/internal/app/middleware"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"golang.org/x/sync/semaphore"
 )
 
 type DBStorage struct {
-	conn *pgxpool.Conn
+	conn *pgxpool.Pool
 }
 
-func NewDBStorage(c *pgxpool.Conn) *DBStorage {
+func NewDBStorage(c *pgxpool.Pool) *DBStorage {
 	return &DBStorage{conn: c}
 }
 
 func (st *DBStorage) AddLink(ctx context.Context, full string, short string) {
-	_, _ = st.conn.Exec(ctx, "INSERT INTO links(long,short) VALUES ($1,$2);", full, short)
-}
-func (st *DBStorage) GetByShort(ctx context.Context, s string) (full string, found bool) {
-	err := st.conn.QueryRow(ctx, "SELECT long FROM links WHERE short = $1;", s).Scan(&full)
+	_, err := st.conn.Exec(ctx, "INSERT INTO links(long,short,user_uuid) VALUES ($1,$2,$3);", full, short, ctx.Value(middleware.UserIDKey))
 	if err != nil {
-		return "", false
+		log.Println(err)
+	}
+}
+func (st *DBStorage) GetByShort(ctx context.Context, s string) (full string, found bool, deleted bool) {
+	row := st.conn.QueryRow(ctx, "SELECT long,deleted FROM links WHERE short = $1;", s)
+	err := row.Scan(&full, &deleted)
+
+	if err != nil {
+		return "", false, false
 	}
 	if full != "" {
 		found = true
@@ -39,8 +48,41 @@ func (st *DBStorage) GetByFull(ctx context.Context, f string) (short string, fou
 	return
 }
 
+func (st *DBStorage) GetByUserUUID(ctx context.Context, userUUID string) (*shortToFullMap, error) {
+	rows, err := st.conn.Query(ctx, "SELECT short,long FROM links WHERE user_uuid = $1;", userUUID)
+	if err != nil {
+		return nil, err
+	}
+	m := shortToFullMap{}
+	for rows.Next() {
+		var short, long string
+		err := rows.Scan(&short, &long)
+		if err != nil {
+			return nil, errors.Join(errors.New("error scanning rows from rowset"), err)
+		}
+		m[shortURL(short)] = fullURL(long)
+	}
+
+	return &m, nil
+}
+
 func (st *DBStorage) LoadFromJSONFile(path string) error {
 	return nil
 }
 func (st *DBStorage) SaveJSONToFile(path string) {
+}
+
+func (st *DBStorage) DeleteAsync(ctx context.Context, shortURLs []string, userUUID string) {
+	sem := semaphore.NewWeighted(5)
+	go func() {
+		err := sem.Acquire(ctx, 1)
+		if err != nil {
+			log.Println(err)
+			return
+		}
+		defer sem.Release(1)
+		_, err = st.conn.Exec(ctx, "UPDATE links SET deleted = true WHERE short = ANY ($1) AND user_uuid = $2", shortURLs, userUUID)
+		log.Println(err)
+	}()
+
 }
