@@ -38,7 +38,7 @@ func (h *postShortenBatchHandler) randShortUnique(ctx context.Context, n int) st
 			randomSym := alphabet[rand.Intn(len(alphabet))]
 			r = append(r, randomSym)
 		}
-		if _, exists := h.app.Storage.GetByShort(ctx, string(r)); !exists {
+		if _, exists, _ := h.app.Storage.GetByShort(ctx, string(r)); !exists {
 			return string(r)
 		}
 	}

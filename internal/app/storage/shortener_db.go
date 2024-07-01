@@ -7,13 +7,14 @@ import (
 
 	"github.com/FoGezz/go-url-shortener/internal/app/middleware"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"golang.org/x/sync/semaphore"
 )
 
 type DBStorage struct {
-	conn *pgxpool.Conn
+	conn *pgxpool.Pool
 }
 
-func NewDBStorage(c *pgxpool.Conn) *DBStorage {
+func NewDBStorage(c *pgxpool.Pool) *DBStorage {
 	return &DBStorage{conn: c}
 }
 
@@ -23,10 +24,12 @@ func (st *DBStorage) AddLink(ctx context.Context, full string, short string) {
 		log.Println(err)
 	}
 }
-func (st *DBStorage) GetByShort(ctx context.Context, s string) (full string, found bool) {
-	err := st.conn.QueryRow(ctx, "SELECT long FROM links WHERE short = $1;", s).Scan(&full)
+func (st *DBStorage) GetByShort(ctx context.Context, s string) (full string, found bool, deleted bool) {
+	row := st.conn.QueryRow(ctx, "SELECT long,deleted FROM links WHERE short = $1;", s)
+	err := row.Scan(&full, &deleted)
+
 	if err != nil {
-		return "", false
+		return "", false, false
 	}
 	if full != "" {
 		found = true
@@ -67,4 +70,19 @@ func (st *DBStorage) LoadFromJSONFile(path string) error {
 	return nil
 }
 func (st *DBStorage) SaveJSONToFile(path string) {
+}
+
+func (st *DBStorage) DeleteAsync(ctx context.Context, shortURLs []string, userUUID string) {
+	sem := semaphore.NewWeighted(5)
+	go func() {
+		err := sem.Acquire(ctx, 1)
+		if err != nil {
+			log.Println(err)
+			return
+		}
+		defer sem.Release(1)
+		_, err = st.conn.Exec(ctx, "UPDATE links SET deleted = true WHERE short = ANY ($1) AND user_uuid = $2", shortURLs, userUUID)
+		log.Println(err)
+	}()
+
 }

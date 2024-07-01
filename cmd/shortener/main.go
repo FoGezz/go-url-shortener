@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"fmt"
 	"log"
 	"net/http"
@@ -16,7 +15,7 @@ func main() {
 
 	cfg := &config.Config{}
 	cfg.Load()
-	// cfg.DBDSN = "postgres://postgres:postgres@localhost:5432/praktikum?sslmode=disable"
+	cfg.DBDSN = "postgres://postgres:postgres@localhost:5432/praktikum?sslmode=disable"
 	fmt.Println("Running on conf", cfg)
 
 	db := storage.NewLinksMapping()
@@ -31,11 +30,7 @@ func main() {
 			log.Fatalf("Error encountered on connecting to DB: %v", DBErr)
 		}
 		app.DBPool = pool
-		conn, DBErr := pool.Acquire(context.Background())
-		if DBErr != nil {
-			log.Fatalf("Error encountered on acquiring conn: %v", DBErr)
-		}
-		app.Storage = storage.NewDBStorage(conn)
+		app.Storage = storage.NewDBStorage(pool)
 	}
 
 	r := chi.NewRouter()
